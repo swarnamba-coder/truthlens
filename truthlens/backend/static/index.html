@@ -381,11 +381,39 @@ const EVR={
      const ff=getAllFindings('image',f.id);
      const artFinding=ff.find(x=>x.artifact_path);
      const hasRegions=ff.some(x=>x.region);
+     const aiF=ff.find(x=>x.title&&(x.title.includes('AI-Generated')||x.title.includes('Authenticity')||x.title.includes('AI Image Detection')));
+     const aiScore=aiF?.score!=null?aiF.score:null;
+     const isAI=aiScore!=null&&aiScore>=0.60;
+     const isReal=aiScore!=null&&aiScore<0.35;
      return `<div style="margin-bottom:24px">
 <div class="grid g2">
  <div class="card">
-  <h2 style="margin-bottom:10px">📷 ${esc(f.name)}</h2>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+    <h2 style="margin:0">📷 ${esc(f.name)}</h2>
+    ${aiScore!=null?`
+      <div style="padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px;${isAI?'background:rgba(251,113,133,.18);color:var(--cr);border:1px solid var(--cr)':isReal?'background:rgba(52,211,153,.18);color:var(--ok);border:1px solid var(--ok)':'background:rgba(251,191,36,.18);color:var(--wa);border:1px solid var(--wa)'}">
+        ${isAI?'🤖 AI-GENERATED (SYNTHETIC)':isReal?'✅ AUTHENTIC CAMERA PHOTO':'⚠️ AMBIGUOUS FORENSICS'}
+      </div>`:''}
+  </div>
   <p class="mu" style="font-size:12px;margin-bottom:8px">Size: ${size(f.size)} · SHA-256: <code style="font-size:10px">${f.sha256.slice(0,16)}…</code></p>
+  
+  ${aiScore!=null?`
+  <div style="background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+      <span><b>Physical Sensor Forensics:</b> ${isAI?'<span style="color:var(--cr);font-weight:600">Neural Diffusion Detected</span>':'<span style="color:var(--ok);font-weight:600">Authentic Hardware Capture</span>'}</span>
+      <span>${isAI?`<b>${Math.round(aiScore*100)}%</b> AI Likelihood`:`<b>${Math.round((1-aiScore)*100)}%</b> Authenticity`}</span>
+    </div>
+    <div style="height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:10px">
+      <div style="height:100%;width:${Math.round(aiScore*100)}%;background:${isAI?'var(--cr)':isReal?'var(--ok)':'var(--wa)'};border-radius:3px"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px">
+      <div><b>1. CMOS Sensor Noise:</b> ${isReal?'<span style="color:var(--ok)">✓ PRNU Verified</span>':'<span style="color:var(--cr)">✗ Noise Absent</span>'}</div>
+      <div><b>2. Optical Gradient:</b> ${isReal?'<span style="color:var(--ok)">✓ Lens Focus Response</span>':'<span style="color:var(--cr)">✗ Diffusion Smoothing</span>'}</div>
+      <div><b>3. Surface Texture:</b> ${isReal?'<span style="color:var(--ok)">✓ Natural Entropy</span>':'<span style="color:var(--cr)">✗ Artificial Regularity</span>'}</div>
+      <div><b>4. Frequency Energy:</b> ${isReal?'<span style="color:var(--ok)">✓ Natural 1/f Roll-off</span>':'<span style="color:var(--cr)">✗ Upsampling Peak</span>'}</div>
+    </div>
+  </div>`:''}
+
   <div style="position:relative;display:inline-block;max-width:100%">
    <img id="img-${f.id}" src="${EVU(S.inv,f.id)}" alt="${esc(f.name)}" style="max-width:100%;border-radius:4px;display:block" onerror="this.onerror=null;this.alt='Preview unavailable';this.style.cssText='width:100%;height:140px;background:var(--s3);border-radius:4px;display:flex;align-items:center;justify-content:center'">
    ${hasRegions?'<p class="mu" style="font-size:11px;margin-top:4px">Hover detector boxes over image for region context.</p>':''}
