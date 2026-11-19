@@ -20,7 +20,8 @@ C2PA_DET       = {"name": "C2PA Content Credentials",          "version": "0.5.0
 FFT_DET        = {"name": "FFT Frequency Noise Analyser",      "version": "1.0",    "source": "TruthLens / scipy.fft",                  "license": "BSD-3",                   "execution_mode": "native_model"}
 PRNU_DET       = {"name": "PRNU Sensor Noise Fingerprint",     "version": "1.0",    "source": "TruthLens / numpy",                      "license": "BSD-3",                   "execution_mode": "native_model"}
 LBP_DET        = {"name": "LBP Texture Uniformity Analyser",   "version": "1.0",    "source": "TruthLens / scikit-image",               "license": "BSD-3",                   "execution_mode": "native_model"}
-CA_DET         = {"name": "Chromatic Aberration Detector",     "version": "1.0",    "source": "TruthLens / OpenCV",                     "license": "Apache 2.0",              "execution_mode": "native_model"}
+GRAD_DET       = {"name": "Gradient & Edge Distribution Analyser", "version": "1.0", "source": "TruthLens / numpy", "license": "BSD-3", "execution_mode": "native_model"}
+SMOOTH_DET     = {"name": "Micro-Texture Smoothness Analyser",     "version": "1.0", "source": "TruthLens / numpy", "license": "BSD-3", "execution_mode": "native_model"}
 VIT_DET        = {"name": "ViT AI-Image Classifier",           "version": "1.0",    "source": "Organika/sdxl-detector (HuggingFace)",   "license": "Apache 2.0",              "execution_mode": "native_model"}
 
 
@@ -143,42 +144,44 @@ def _lbp_texture(im: Image.Image):
         return 0.0, {"error": str(e)}
 
 
-# ── LAYER 4: Chromatic Aberration ─────────────────────────────────────────────
-def _chromatic_aberration(im: Image.Image):
+# ── LAYER 4: Gradient Kurtosis & Texture Smoothness ───────────────────────────
+def _gradient_and_smoothness_analysis(im: Image.Image):
     """
-    Real camera lenses produce colour fringing (chromatic aberration) at high-
-    contrast edges. AI renderers (Stable Diffusion, DALL-E, Midjourney) often
-    produce physically impossible perfect edges with zero CA, or artificial CA
-    added uniformly as a texture, not concentrated at genuine edges.
-    Returns: (score 0-1 where >0.5 suspicious, detail_dict)
+    Evaluates gradient distribution (tail heaviness) and micro-texture smoothness.
+    Real optical photos:
+      - Contain high gradient kurtosis (> 12) from sharp natural textures, sensor noise,
+        and high-frequency edges.
+      - Moderate smooth fraction (0.4 - 0.7) because sensor noise prevents pure zero gradients.
+    AI generated/rendered imagery:
+      - Low gradient kurtosis (< 8) because diffusion models over-smooth backgrounds & skin.
+      - High smooth fraction (> 0.85) due to lack of camera sensor shot noise.
     """
-    try:
-        import cv2
-        rgb = np.asarray(im.convert("RGB"), dtype=np.float32)
-        r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
-        # Channel misalignment at edges
-        rg_diff = float(np.abs(r - g).mean())
-        rb_diff = float(np.abs(r - b).mean())
-        gb_diff = float(np.abs(g - b).mean())
-        ca_mean = (rg_diff + rb_diff + gb_diff) / 3.0
-        # Detect edges in grayscale
-        gray = cv2.cvtColor(np.asarray(im.convert("RGB"), dtype=np.uint8), cv2.COLOR_RGB2GRAY)
-        edges = cv2.Canny(gray, 50, 150)
-        edge_density = float(edges.mean()) / 255.0
-        # Natural photos: CA correlates with edges. AI: CA is uniform (no correlation)
-        # Very low CA at edges → suspicious (AI renders perfect edges)
-        ca_per_edge = ca_mean / (edge_density + 1e-6)
-        # Real photos: ca_per_edge > 500. AI images: often < 200 (perfect edges, no CA)
-        too_perfect = ca_per_edge < 200
-        score = 0.6 if too_perfect else 0.0
-        return score, {
-            "ca_mean": round(ca_mean, 3),
-            "edge_density": round(edge_density, 4),
-            "ca_per_edge": round(ca_per_edge, 2),
-            "perfect_edges": too_perfect
-        }
-    except Exception as e:
-        return 0.0, {"error": str(e)}
+    gray = np.asarray(im.convert("L"), dtype=np.float32)
+    gx = np.diff(gray, axis=1)
+    gy = np.diff(gray, axis=0)
+    gmag = np.sqrt(gx[:-1, :]**2 + gy[:, :-1]**2)
+    g_std = gmag.std()
+    grad_kurt = float(np.mean(((gmag - gmag.mean()) / (g_std + 1e-6))**4))
+    smooth_frac = float((gmag < 2.0).mean())
+    
+    score = 0.0
+    if grad_kurt < 6.0:
+        score += 0.50
+    elif grad_kurt < 10.0:
+        score += 0.25
+        
+    if smooth_frac > 0.85:
+        score += 0.40
+    elif smooth_frac > 0.75:
+        score += 0.20
+        
+    score = min(score, 1.0)
+    return score, {
+        "gradient_kurtosis": round(grad_kurt, 3),
+        "smooth_fraction": round(smooth_frac, 4),
+        "is_abnormally_smooth": smooth_frac > 0.85,
+        "is_low_kurtosis": grad_kurt < 6.0
+    }
 
 
 # ── LAYER 5: HuggingFace ViT Classifier ──────────────────────────────────────
@@ -258,18 +261,24 @@ def _check_c2pa(path: Path):
 
 
 # ── COMPOSITE AI SCORE ────────────────────────────────────────────────────────
-def _composite_ai_verdict(fft_s, prnu_s, lbp_s, ca_s, vit_s):
+def _composite_ai_verdict(fft_s, prnu_s, lbp_s, grad_s, vit_s):
     """
-    Weighted ensemble of all 5 layers.
-    ViT gets highest weight when available; heuristics fill in otherwise.
+    Weighted ensemble of physical and deep learning layers.
+    PRNU noise absence and Gradient flatness are primary physical fingerprints of AI generation.
     """
     if vit_s is not None:
-        # Weighted: ViT 50%, FFT 15%, PRNU 15%, LBP 10%, CA 10%
-        composite = 0.50*vit_s + 0.15*fft_s + 0.15*prnu_s + 0.10*lbp_s + 0.10*ca_s
+        base = 0.45 * vit_s + 0.25 * grad_s + 0.20 * prnu_s + 0.10 * fft_s
     else:
-        # No ViT: FFT 30%, PRNU 25%, LBP 25%, CA 20%
-        composite = 0.30*fft_s + 0.25*prnu_s + 0.25*lbp_s + 0.20*ca_s
-    return round(float(composite), 4)
+        # High reliance on PRNU and Gradient Kurtosis
+        base = 0.40 * grad_s + 0.35 * prnu_s + 0.15 * fft_s + 0.10 * lbp_s
+        
+        # Non-linear boost: if both primary physical indicators detect AI hallmarks
+        if grad_s >= 0.70 and prnu_s >= 0.70:
+            base = max(base, 0.82)
+        elif grad_s >= 0.50 or prnu_s >= 0.70:
+            base = max(base, 0.55)
+            
+    return round(float(base), 4)
 
 
 # ── MAIN ENTRY ────────────────────────────────────────────────────────────────
@@ -345,16 +354,16 @@ def analyze(path: Path, file_id: str, art_dir: Path):
     lbp_score, lbp_meta = _lbp_texture(thumb)
     meta["lbp"] = lbp_meta
 
-    # ── Layer 4: Chromatic Aberration ─────────────────────────────────────────
-    ca_score, ca_meta = _chromatic_aberration(thumb)
-    meta["chromatic_aberration"] = ca_meta
+    # ── Layer 4: Gradient & Texture Smoothness ────────────────────────────────
+    grad_score, grad_meta = _gradient_and_smoothness_analysis(thumb)
+    meta["gradient_and_smoothness"] = grad_meta
 
     # ── Layer 5: ViT Classifier ───────────────────────────────────────────────
     vit_score, vit_meta = _vit_classify(thumb)
     meta["vit_classifier"] = vit_meta
 
     # ── Composite AI score ────────────────────────────────────────────────────
-    composite = _composite_ai_verdict(fft_score, prnu_score, lbp_score, ca_score, vit_score or 0.0)
+    composite = _composite_ai_verdict(fft_score, prnu_score, lbp_score, grad_score, vit_score)
     meta["ai_composite_score"] = composite
 
     # Verdict label
@@ -388,10 +397,10 @@ def analyze(path: Path, file_id: str, art_dir: Path):
             f"(kurtosis: {prnu_meta.get('kurtosis','?')}); "
             f"LBP texture score {round(lbp_score*100,1)}% "
             f"(entropy: {lbp_meta.get('lbp_entropy','?')}); "
-            f"Chromatic aberration score {round(ca_score*100,1)}% "
-            f"(CA/edge ratio: {ca_meta.get('ca_per_edge','?')}).{vit_desc}"
+            f"Gradient & smoothness score {round(grad_score*100,1)}% "
+            f"(kurtosis: {grad_meta.get('gradient_kurtosis','?')}, smooth_frac: {grad_meta.get('smooth_fraction','?')}).{vit_desc}"
         ),
-        detector=VIT_DET if vit_score is not None else FFT_DET,
+        detector=VIT_DET if vit_score is not None else GRAD_DET,
         score=composite,
         limitations=[
             "No single metric is definitive. All scores are probabilistic indicators, not proof.",
