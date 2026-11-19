@@ -1,7 +1,22 @@
-import hashlib, shutil, uuid, importlib.util
+import hashlib, mimetypes, shutil, uuid, importlib.util
 from typing import List, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
+
+# Ensure common forensic media types are registered
+mimetypes.add_type("audio/wav", ".wav")
+mimetypes.add_type("audio/wave", ".wav")
+mimetypes.add_type("video/mp4", ".mp4")
+mimetypes.add_type("image/jpeg", ".jpg")
+mimetypes.add_type("image/jpeg", ".jpeg")
+mimetypes.add_type("image/png", ".png")
+
+KIND_MIME = {
+    "audio":  "audio/wav",
+    "video":  "video/mp4",
+    "image":  "image/jpeg",
+    "text":   "text/plain; charset=utf-8",
+}
 from app import config
 from app.agents import orchestrator
 from app.database.database import SessionLocal, Investigation, EvidenceFile, AgentExecution, Finding, Report, iso
@@ -185,7 +200,17 @@ def evidence(inv_id: str, file_id: str, db=Depends(get_db)):
     f = db.query(EvidenceFile).filter_by(id=file_id, investigation_id=inv_id).first()
     if not f:
         raise HTTPException(404, "Evidence file not found")
-    return FileResponse(f.stored_path, filename=f.original_name)
+    # Determine MIME type: use kind-based map first, then filename extension fallback
+    mt = KIND_MIME.get(f.kind) or mimetypes.guess_type(f.original_name)[0] or "application/octet-stream"
+    return FileResponse(
+        f.stored_path,
+        media_type=mt,
+        filename=f.original_name,
+        headers={
+            "Accept-Ranges": "bytes",
+            "Cache-Control": "no-cache",
+        }
+    )
 
 @router.get("/investigations/{inv_id}/artifacts/{name:path}")
 def artifact(inv_id: str, name: str, db=Depends(get_db)):
@@ -194,4 +219,5 @@ def artifact(inv_id: str, name: str, db=Depends(get_db)):
     p = (base / name).resolve()
     if base not in p.parents or not p.is_file():
         raise HTTPException(404, "Artifact not found")
-    return FileResponse(p)
+    mt = mimetypes.guess_type(str(p))[0] or "application/octet-stream"
+    return FileResponse(p, media_type=mt)
