@@ -1,3 +1,7 @@
+# ?? TruthLens — Forensic Intelligence Platform
+
+**?? Live Demo: [truthlens-production-575d218c.up.railway.app](https://truthlens-production-575d218c.up.railway.app)**
+
 # TruthLens â€” Forensic Intelligence Platform
 
 TruthLens is a digital forensic intelligence platform designed around evidence traceability, candidate tool evaluation, and explainability. It examines multimodal evidence (image, video, audio, and text) for indicators of manipulation and synthetic alteration, links timestamped observations across modalities, and compiles findings into court-ready ReportLab PDF dossiers.
@@ -97,3 +101,4 @@ Open **`http://localhost:8000`** in your browser.
 .\run.bat
 ```
 Open **`http://localhost:8000`**.
+
