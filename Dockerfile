@@ -19,14 +19,26 @@ RUN pip install --no-cache-dir \
     pillow>=10.0 \
     opencv-python-headless>=4.8 \
     librosa>=0.10 \
-    soundfile>=0.12
+    soundfile>=0.12 \
+    scipy>=1.11
 
-# Layer 2: ML inference libs
+# Layer 2: PyTorch CPU (AI image detection)
+RUN pip install --no-cache-dir \
+    torch>=2.1 torchvision>=0.16 \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Layer 3: ML inference + AI detection libs
 RUN pip install --no-cache-dir \
     faster-whisper>=1.0 \
-    c2pa-python>=0.5.0
+    transformers>=4.40 \
+    timm>=0.9 \
+    safetensors>=0.4 \
+    huggingface-hub>=0.20 \
+    tokenizers>=0.19 \
+    regex>=2023.0 \
+    scikit-learn>=1.3
 
-# Layer 3: web + data libs
+# Layer 4: web + data libs
 RUN pip install --no-cache-dir \
     fastapi>=0.110 \
     uvicorn[standard]>=0.29 \
@@ -38,6 +50,9 @@ RUN pip install --no-cache-dir \
     httpx>=0.27 \
     python-dotenv>=1.0 \
     pytest>=8.0
+
+# Pre-download the ViT AI-detection model at build time (avoids cold-start delay)
+RUN python -c "from transformers import pipeline; pipeline('image-classification', model='Organika/sdxl-detector', device=-1)" || echo "Model pre-download skipped"
 
 COPY truthlens/backend /app
 
