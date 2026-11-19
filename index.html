@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>TruthLens — Forensic Intelligence Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080D18;--side:#0C1423;--s2:#111C2D;--s3:#162238;--ac:#38BDF8;--ac2:#818CF8;--tx:#F1F5F9;--mu:#94A3B8;--ok:#34D399;--wa:#FBBF24;--cr:#FB7185;--bd:#22304a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 Inter,system-ui,sans-serif}
+a{color:inherit;text-decoration:none}button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.app{display:flex;min-height:100vh}
+aside{width:220px;background:var(--side);border-right:1px solid var(--bd);padding:16px 10px;flex:none;position:sticky;top:0;height:100vh;overflow-y:auto}
+aside.c{width:60px}aside.c .lb{display:none}
+.logo{font-weight:700;letter-spacing:.05em;padding:4px 10px 16px;display:flex;gap:8px;align-items:center}.logo i{width:14px;height:14px;border:2px solid var(--ac);border-radius:50%;flex:none}
+.nav a{display:flex;gap:10px;padding:9px 10px;border-radius:6px;color:var(--mu);margin-bottom:2px}.nav a:hover{background:var(--s2)}.nav a.on{background:var(--s3);color:var(--tx);box-shadow:inset 2px 0 var(--ac)}
+main{flex:1;min-width:0}
+header.top{display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--bd);background:var(--side);position:sticky;top:0;z-index:5}
+.sp{flex:1}.pill{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--bd);color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.pill.ok{color:var(--ok);border-color:var(--ok);background:rgba(52,211,153,.1)}.pill.er{color:var(--cr);border-color:var(--cr);background:rgba(251,113,133,.1)}
+.pill.demo{color:var(--wa);border-color:var(--wa);background:rgba(251,191,36,.12)}.pill.info{color:var(--ac);border-color:var(--ac);background:rgba(56,189,248,.1)}
+.btn{background:var(--s3);border:1px solid var(--bd);border-radius:6px;padding:8px 14px;min-height:36px;color:var(--tx);font-weight:500}.btn:hover{border-color:var(--ac)}
+.btn.p{background:var(--ac);color:#04121c;border-color:var(--ac);font-weight:600}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:4px 9px;min-height:28px;font-size:12px}
+.pg{padding:24px 20px;max-width:1180px}h1{font-size:22px;margin:0 0 6px}h2{font-size:15px;margin:0 0 10px}.mu{color:var(--mu)}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.card{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:16px}
+.kpi b{font-size:26px;display:block;margin-top:4px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.drop{border:1px dashed #35507a;border-radius:8px;padding:14px;background:var(--bg)}.drop.over{border-color:var(--ac);background:var(--s3)}
+.file{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:13px;border-top:1px solid var(--bd);margin-top:6px}.file span:first-child{flex:1;overflow:hidden;text-overflow:ellipsis}
+.err{color:var(--cr);font-size:13px;margin-top:6px}
+input[type=text],textarea,select{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:9px;color:var(--tx);font:inherit}
+label{display:block;color:var(--mu);margin:10px 0 4px;font-size:13px}
+.hero{padding:54px 20px 36px;max-width:920px;margin:auto}.hero h1{font-size:clamp(32px,5vw,48px);line-height:1.15;letter-spacing:-.02em}
+.lnav{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--bd)}
+.note{border-left:3px solid var(--ac);background:var(--s2);padding:12px 14px;border-radius:0 6px 6px 0}
+.flow{display:flex;gap:8px;flex-wrap:wrap}.flow span{background:var(--s2);border:1px solid var(--bd);padding:8px 12px;border-radius:6px}
+.tl{position:relative;margin-left:70px;border-left:2px solid var(--bd)}
+.ev{position:relative;padding:0 0 16px 18px}.ev time{position:absolute;left:-76px;width:60px;text-align:right;color:var(--ac);font-variant-numeric:tabular-nums;font-weight:600}
+.ev:before{content:"";position:absolute;left:-6px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--bg);border:2px solid var(--c,var(--ac))}
+.tag{font-size:11px;padding:2px 7px;border-radius:4px;border:1px solid var(--c,var(--bd));color:var(--c,var(--mu));margin-right:6px;font-weight:600;display:inline-block}
+.bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+.empty{text-align:center;padding:40px 16px;color:var(--mu)}
+.code-box{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:10px 12px;font-family:monospace;font-size:12px;overflow-x:auto}
+@media(max-width:760px){aside{position:fixed;z-index:9;transform:translateX(-100%);transition:transform .2s}aside.open{transform:none;width:220px}aside.open .lb{display:inline}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body><div id="root"></div>
+<script>
+const API_BASE=(window.TRUTHLENS_API_BASE||(location.port==='8000'?location.origin:'http://localhost:8000'))+'/api/v1';
+async function api(path,opt={},ms=10000){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+ try{const r=await fetch(API_BASE+path,{...opt,signal:c.signal});if(!r.ok)throw new Error('Backend returned HTTP '+r.status);return await r.json()}
+ catch(e){throw new Error(e.name==='AbortError'?'Request timed out':e.message==='Failed to fetch'?'Cannot reach TruthLens API at '+API_BASE:e.message)}finally{clearTimeout(t)}}
+
+const S={demo:false,collapsed:false,open:false,files:{image:[],video:[],audio:[],text:[]},errs:{},conn:'checking',inv:null,toast:'',tab:'image',list:null,res:null,st:null,ev:[],sk:'date',p:0,q:'',f:'',node:null};
+const TYPES={image:{l:'Image evidence',ext:['jpg','jpeg','png','webp','tiff','bmp']},video:{l:'Video evidence',ext:['mp4','mov','webm','avi']},audio:{l:'Audio evidence',ext:['wav','mp3','m4a','flac']},text:{l:'Text & Documents',ext:['txt','md','docx','pdf']}};
+const NAV=[
+ ['overview','Overview'],
+ ['new','New investigation'],
+ ['history','Investigations'],
+ ['evidence','Evidence workspace'],
+ ['correlation','Correlation'],
+ ['report','Reports'],
+ ['registry','Model Registry'],
+ ['settings','Settings']
+];
+
+const $=s=>document.querySelector(s),esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const size=b=>b>1e6?(b/1e6).toFixed(1)+' MB':Math.max(1,Math.round(b/1e3))+' KB';
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');
+const route=()=>location.hash.slice(1)||'home';
+
+const PV={
+ observed:['OBSERVED METADATA','--mu','Direct cryptographic or file stream property'],
+ heuristic:['HEURISTIC INDICATOR','--ac','Mathematical signal anomaly (outlier metric)'],
+ model_prediction:['MODEL PREDICTION','--ac2','Machine learning classifier inference'],
+ ai_explanation:['AI EXPLANATION','--wa','Plain-language examiner synthesis']
+};
+
+const EVU=(i,f)=>`${API_BASE}/investigations/${i}/evidence/${f}`;
+const ART=p=>p.startsWith('/')?API_BASE.replace(/\/api\/v1$/,'')+p:`${API_BASE}/investigations/${S.inv}/artifacts/${p}`;
+
+let poll=null;
+function stopPoll(){if(poll){clearInterval(poll);poll=null}}
+function startPoll(){stopPoll();poll=setInterval(async()=>{await loadRes();if(S.st&&['completed','failed'].includes(S.st.status))stopPoll()},2000)}
+
+async function ping(){S.conn='checking';render();try{S.health=await api('/health',{},5000);S.conn='ok'}catch(e){S.conn='down';S.connMsg=e.message}render();onRoute()}
+function toast(m){S.toast=m;render();setTimeout(()=>{S.toast='';render()},3500)}
+
+async function loadList(){try{S.list=await api('/investigations');S.lerr=''}catch(e){S.lerr=e.message}render()}
+async function loadRes(){if(!S.inv)return;try{S.st=await api(`/investigations/${S.inv}/status`);const r=await api(`/investigations/${S.inv}/results`);S.res=r.results;S.ev=r.evidence;S.rerr=''}catch(e){S.rerr=e.message}render()}
+async function loadRegistry(){try{const r=await api('/registry');S.registry=r.registry}catch(e){S.regErr=e.message}render()}
+
+function openInv(id,pg){S.inv=id;S.res=null;S.st=null;location.hash=pg}
+async function dl(){try{const r=await fetch(API_BASE+`/investigations/${S.inv}/report`);if(!r.ok)throw new Error('PDF not ready ('+r.status+')');const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=S.inv+'-report.pdf';a.click()}catch(e){toast(e.message)}}
+async function rev(id,s){try{await api(`/investigations/${S.inv}/findings/${id}/review`,{method:'PATCH',headers:{"Content-Type":"application/json"},body:JSON.stringify({review_status:s})});await loadRes();toast('Finding '+s)}catch(e){toast(e.message)}}
+
+function onRoute(){const r=route();if(S.conn!=='ok')return;if(r==='overview'||r==='history')loadList();if(r==='registry')loadRegistry();if(S.inv&&['evidence','correlation','report'].includes(r))loadRes();if(r==='progress'&&S.inv){loadRes();startPoll()}}
+
+function landing(){return `<div class="lnav"><b class="logo" style="padding:0"><i></i>TRUTHLENS</b><span class="sp"></span><a class="btn" href="#overview">Open workspace</a></div>
+<section class="hero"><p class="mu" style="font-weight:600;letter-spacing:.05em;text-transform:uppercase">Digital Truth. Forensic Intelligence.</p>
+<h1>See beyond what appears real.</h1>
+<p class="mu" style="max-width:62ch;font-size:16px;margin:16px 0 24px">TruthLens examines images, video, audio, and documents for manipulation indicators and inconsistencies across modalities, then assembles findings into an explainable, court-ready investigation report.</p>
+<p><a class="btn p" href="#overview">Explore Demo Cases</a> <a class="btn" href="#new" style="margin-left:8px">Start Real-Time Analysis</a> <a class="btn" href="#registry" style="margin-left:8px">Model Governance</a></p></section>
+<section class="hero" id="cap" style="padding-top:10px"><div class="grid g3">
+<div class="card"><h2>Image Forensics</h2><p class="mu">ExifTool metadata extraction, OpenCV sharpness variance, C2PA Content Credentials, and TruFor-evaluated ELA localized re-compression outlier maps.</p></div>
+<div class="card"><h2>Video Forensics</h2><p class="mu">FFmpeg keyframe extraction, nominal timestamp sampling, and GenConViT-evaluated temporal frame-to-frame pixel discontinuity detection.</p></div>
+<div class="card"><h2>Audio Anti-Spoofing</h2><p class="mu">Librosa STFT spectrogram visualizer, AASIST-evaluated acoustic spectral flatness outlier heuristics, and Faster-Whisper CPU int8 transcription.</p></div>
+<div class="card"><h2>Text Context & Diff</h2><p class="mu">Difflib sequence matching comparing spoken audio transcripts against submitted documents (.txt, .md, .docx, .pdf).</p></div>
+<div class="card"><h2>Cross-Modal Correlation</h2><p class="mu">Unified chronological timeline and interactive SVG relationship graph linking cross-modal anomalies sharing timestamps.</p></div>
+<div class="card"><h2>Court-Ready Reports</h2><p class="mu">ReportLab PDF dossiers with SHA-256 evidence integrity chains, raw detector metrics, and alternative benign explanations.</p></div>
+</div>
+<div class="card" style="margin-top:24px;border-left:4px solid var(--ac)">
+<b>Scientific Forensic Principle:</b> TruthLens never fabricates or calculates a single combined "authenticity percentage". Every finding preserves its raw detector score, forensic limitations, and alternative benign explanations.
+</div></section>`}
+
+function overview(){const h='<h1>Investigation Overview</h1><p class="mu">Forensic platform status and active investigations registry.</p>';
+ if(S.conn==='down')return h+`<div class="card empty"><b style="color:var(--cr)">Backend not reachable at ${esc(API_BASE)}</b><p class="mu">Make sure the Docker container or local server is running on port 8000.</p><button class="btn" onclick="ping()">Retry connection</button></div>`;
+ if(!S.list)return h+'<p class="mu">Loading investigations...</p>';
+ const L=S.list,demos=L.filter(i=>i.is_demo),live=L.filter(i=>!i.is_demo);
+ const nf=L.reduce((n,i)=>n+(i.evidence||[]).length,0);
+ return h+`
+<div class="grid g4" style="margin:16px 0">
+ <div class="card kpi"><span class="mu">Pre-Seeded Demo Cases</span><b>${demos.length} Available</b><span class="pill demo" style="margin-top:6px;display:inline-block">Interactive Samples</span></div>
+ <div class="card kpi"><span class="mu">Live Investigations</span><b>${live.length} Executed</b><span class="pill ok" style="margin-top:6px;display:inline-block">Real-Time Data</span></div>
+ <div class="card kpi"><span class="mu">Evidence Files Indexed</span><b>${nf} Files</b><span class="mu" style="font-size:12px;display:block">SHA-256 Verified</span></div>
+ <div class="card kpi"><span class="mu">Awaiting Review</span><b>${L.filter(i=>i.review_status==='needs_review'||i.review_status==='not_started').length} Cases</b><span class="mu" style="font-size:12px;display:block">Examiner Action</span></div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+ <h2>3 Pre-Seeded Demonstration Cases (Ready to Explore)</h2>
+ <p class="mu" style="margin-bottom:12px">Explore full multimodal evidence, interactive players, relationship graphs, and downloadable PDF reports without uploading files:</p>
+ <div class="grid g3">${demos.map(d=>`
+  <div class="card" style="background:var(--s3);border-color:var(--bd)">
+   <span class="pill demo">DEMO SAMPLE</span> <b style="margin-left:6px">${esc(d.id)}</b>
+   <h2 style="margin:8px 0 4px;font-size:14px">${esc(d.title)}</h2>
+   <p class="mu" style="font-size:12px;margin:0 0 10px">${esc(d.description.slice(0,105))}...</p>
+   <button class="btn p sm" onclick="openInv('${d.id}','evidence')">Open Evidence</button>
+   <button class="btn sm" onclick="openInv('${d.id}','correlation')">Correlation</button>
+   <button class="btn sm" onclick="S.inv='${d.id}';dl()">PDF Report</button>
+  </div>`).join('')}
+ </div>
+</div>
+
+<div class="grid g2" style="margin-bottom:16px">
+ <div class="card">
+  <h2>Understanding TruthLens Provenance Tiers</h2>
+  <div style="margin-top:8px">
+   <p style="margin:6px 0"><span class="tag" style="--c:var(--mu)">OBSERVED</span> <b>Direct Facts:</b> EXIF tags, container headers, audio sample rates, and SHA-256 hashes.</p>
+   <p style="margin:6px 0"><span class="tag" style="--c:var(--ac)">HEURISTIC</span> <b>Algorithmic Signals:</b> ELA block outliers, spectral flatness spikes, and video frame differences.</p>
+   <p style="margin:6px 0"><span class="tag" style="--c:var(--ac2)">MODEL PREDICTION</span> <b>ML Inference:</b> Faster-Whisper speech-to-text recognition.</p>
+   <p style="margin:6px 0"><span class="tag" style="--c:var(--wa)">AI EXPLANATION</span> <b>Human Guidance:</b> Plain-language Gemini synthesis of converging findings.</p>
+  </div>
+ </div>
+ <div class="card">
+  <h2>Real-Time Forensic Action</h2>
+  <p class="mu">Create a new case with your own images, video, audio, or document files. Files are streamed to the backend, cryptographically hashed with SHA-256, and processed by the real forensic agents in background tasks.</p>
+  <div style="margin-top:14px">
+   <a class="btn p" href="#new">+ New Real-Time Investigation</a>
+   <a class="btn" href="#history" style="margin-left:8px">View All Cases</a>
+  </div>
+ </div>
+</div>
+
+<div class="card">
+ <h2>Recent Investigations (Live & Demo)</h2>
+ ${invTable(L.slice(0,6))}
+</div>`}
+
+function invTable(rows){
+ return `<div class="tw"><table><tr><th>Source</th><th>Case ID</th><th>Title</th><th>Created</th><th>Media</th><th>Status</th><th>Review</th><th>Actions</th></tr>${rows.map(r=>`<tr>
+ <td>${r.is_demo?'<span class="pill demo">DEMO</span>':'<span class="pill ok">REAL-TIME</span>'}</td>
+ <td><b>${r.id}</b></td>
+ <td>${esc(r.title)}</td>
+ <td>${(r.created_at||'').slice(0,10)}</td>
+ <td>${(r.media||[]).join(', ')||'none'}</td>
+ <td><span class="pill ${r.status==='completed'?'ok':r.status==='failed'?'er':'wa'}">${r.status}</span></td>
+ <td>${(r.review_status||'').replace('_',' ')}</td>
+ <td>
+  <button class="btn sm" onclick="openInv('${r.id}','${r.status==='completed'?'evidence':'progress'}')">Workspace</button>
+  ${r.status==='completed'?`<button class="btn sm" onclick="S.inv='${r.id}';dl()">PDF Report</button>`:''}
+ </td></tr>`).join('')||'<tr><td colspan=8 class="empty">No investigations found.</td></tr>'}</table></div>`}
+
+function history(){const h='<h1>Investigations Registry</h1><p class="mu">Browse pre-seeded demonstration datasets and real-time user-uploaded investigations.</p>';
+ if(!S.list)return h+'<p class="mu">Loading...</p>';
+ const q=(S.q||'').toLowerCase(),f=S.f||'',src=S.src||'';
+ let rows=S.list.filter(r=>{
+   const matchQ=(r.title+r.id+(r.case_ref||'')).toLowerCase().includes(q);
+   const matchF=!f||r.status===f;
+   const matchSrc=!src||(src==='demo'?r.is_demo:!r.is_demo);
+   return matchQ&&matchF&&matchSrc;
+ });
+ rows=[...rows].sort((a,b)=>S.sk==='name'?a.title.localeCompare(b.title):b.created_at.localeCompare(a.created_at));
+ const N=Math.max(1,Math.ceil(rows.length/8)),P=Math.min(S.p||0,N-1);
+ return h+`
+<div style="display:flex;gap:10px;margin:14px 0;flex-wrap:wrap">
+ <input type="text" placeholder="Search by title, ID, or case ref" value="${esc(S.q||'')}" oninput="S.q=this.value;S.p=0;render(1)" style="max-width:280px">
+ <select class="btn" onchange="S.src=this.value;S.p=0;render()"><option value="">All Types (Demo & Live)</option><option value="real" ${src==='real'?'selected':''}>Live Real-Time Cases</option><option value="demo" ${src==='demo'?'selected':''}>Demo Samples Only</option></select>
+ <select class="btn" onchange="S.f=this.value;S.p=0;render()"><option value="">All Statuses</option><option value="completed" ${f==='completed'?'selected':''}>Completed</option><option value="processing" ${f==='processing'?'selected':''}>Processing</option><option value="failed" ${f==='failed'?'selected':''}>Failed</option></select>
+ <select class="btn" onchange="S.sk=this.value;S.p=0;render()"><option value="date" ${S.sk==='date'?'selected':''}>Newest First</option><option value="name" ${S.sk==='name'?'selected':''}>Name A–Z</option></select>
+</div>
+<div class="card">${invTable(rows.slice(P*8,P*8+8))}</div>
+<div style="display:flex;gap:10px;margin-top:12px;align-items:center">
+ <button class="btn sm" ${P<=0?'disabled':''} onclick="S.p=${P-1};render()">Previous</button>
+ <span class="mu" style="font-size:13px">Page ${P+1} of ${N} (${rows.length} total)</span>
+ <button class="btn sm" ${P>=N-1?'disabled':''} onclick="S.p=${P+1};render()">Next</button>
+</div>`}
+
+function newInv(){const n=Object.values(S.files).flat();const valid=n.length>0&&!Object.values(S.errs).some(Boolean)&&$('#ttl')?.value!==''&&S.title;
+ return `<h1>New Real-Time Investigation</h1><p class="mu">Files are streamed directly to your TruthLens backend, cryptographically hashed with SHA-256, and processed by real forensic engines.</p>
+<div class="grid g2" style="margin-top:14px"><div class="card">
+ <label for="ttl" style="margin-top:0">Investigation Title (required)</label>
+ <input type="text" id="ttl" placeholder="e.g. Suspected Press Release Video Alteration" value="${esc(S.title||'')}" oninput="S.title=this.value;chk()">
+ <label for="ds">Case Description</label>
+ <textarea id="ds" rows="3" placeholder="Context, acquisition notes, or provenance chain of custody..." oninput="S.ds=this.value">${esc(S.ds||'')}</textarea>
+ <label for="cr">Case Reference ID (optional)</label>
+ <input type="text" id="cr" placeholder="e.g. CR-2026-09" value="${esc(S.cr||'')}" oninput="S.cr=this.value">
+ <label for="tr">Accompanying Script or Document Text (optional)</label>
+ <textarea id="tr" rows="3" placeholder="Official transcript or expected wording to compare against speech audio..." oninput="S.tr=this.value">${esc(S.tr||'')}</textarea>
+</div>
+<div class="grid">${Object.keys(TYPES).map(k=>`<div class="drop" id="d-${k}" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="event.preventDefault();this.classList.remove('over');add('${k}',event.dataTransfer.files)">
+ <b>${TYPES[k].l}</b> <span class="mu" style="font-size:12px">(${TYPES[k].ext.join(', ')})</span><br>
+ <input type="file" multiple aria-label="Browse ${k} files" onchange="add('${k}',this.files);this.value=''" style="margin-top:8px;max-width:100%">
+ ${S.files[k].map((f,i)=>`<div class="file"><span>${esc(f.name)}</span><span class="mu">${size(f.size)}</span><button class="btn sm" onclick="rm('${k}',${i})">Remove</button></div>`).join('')}
+ ${S.errs[k]?`<div class="err">${S.errs[k]}</div>`:''}</div>`).join('')}</div></div>
+<div class="card" style="margin-top:14px">
+ <h2>Ingest & Evidence Integrity Summary</h2>
+ <p>${n.length} file(s) selected: ${Object.keys(TYPES).map(k=>k+' ('+S.files[k].length+')').join(' · ')}</p>
+ <p class="mu">Each file is verified and hashed with SHA-256 upon ingest. All candidate detectors run within local resources or transparent fallbacks.</p>
+ ${S.err?`<div class="err" style="margin-bottom:12px">${esc(S.err)}</div>`:''}
+ <button class="btn p" id="go" ${valid?'':'disabled'} onclick="start()">${S.busy?'Uploading & Starting…':'Start Real-Time Analysis'}</button>
+ ${!valid?'<span class="mu" style="margin-left:8px">Enter a title and select at least one evidence file.</span>':''}
+</div>`}
+
+function chk(){const b=$('#go');if(b){const n=Object.values(S.files).flat().length;b.disabled=!(n&&S.title&&!Object.values(S.errs).some(Boolean))}}
+function add(k,list){S.errs[k]='';[...list].forEach(f=>{const e=f.name.split('.').pop().toLowerCase();if(!TYPES[k].ext.includes(e))S.errs[k]=`“${esc(f.name)}” format not supported. Allowed: ${TYPES[k].ext.join(', ')}`;else if(f.size>200e6)S.errs[k]=`“${esc(f.name)}” exceeds 200 MB limit.`;else S.files[k].push(f)});render()}
+function rm(k,i){S.files[k].splice(i,1);if(!S.files[k].length)S.errs[k]='';render()}
+
+function upload(fd){return new Promise((res,rej)=>{const x=new XMLHttpRequest();x.open('POST',API_BASE+'/investigations');x.timeout=180000;x.upload.onprogress=e=>{if(e.lengthComputable){const b=$('#go');if(b)b.textContent='Uploading '+Math.round(e.loaded/e.total*100)+'%'}};x.onload=()=>{try{const j=JSON.parse(x.responseText);x.status<300?res(j):rej(new Error((j.error&&j.error.message)||'Upload failed ('+x.status+')'))}catch(_){rej(new Error('Unexpected backend response'))}};x.onerror=()=>rej(new Error('Cannot reach backend at '+API_BASE));x.ontimeout=()=>rej(new Error('Upload timed out'));x.send(fd)})}
+
+async function start(){S.busy=true;S.err='';render();const fd=new FormData();fd.append('title',S.title);fd.append('description',S.ds||'');fd.append('case_ref',S.cr||'');fd.append('transcript',S.tr||'');Object.keys(S.files).forEach(k=>S.files[k].forEach(f=>fd.append(k,f)));
+ try{const r=await upload(fd);S.inv=r.id;await api(`/investigations/${r.id}/analyze`,{method:'POST'});S.files={image:[],video:[],audio:[],text:[]};S.title=S.ds=S.cr=S.tr='';location.hash='progress'}
+ catch(e){S.err='Analysis did not start: '+e.message}S.busy=false;render()}
+
+const AG={image:'Image Forensics (ExifTool / OpenCV / TruFor-Fallback)',video:'Video Forensics (FFmpeg / GenConViT-Fallback)',audio:'Audio Forensics (Librosa / AASIST-Fallback / Whisper)',text:'Text Context (Difflib / Multi-Format)',correlation:'Cross-Modal Correlation Engine',report:'Report Generation (ReportLab)'};
+
+function progress(){if(!S.inv)return `<h1>Analysis Progress</h1><div class="card empty">No investigation selected.<br><a class="btn p" href="#history" style="margin-top:10px;display:inline-block">Select Investigation</a></div>`;
+ if(!S.st)return `<h1>Analysis Progress</h1><p class="mu">Loading status for ${esc(S.inv)}...</p>`;
+ const st=S.st;
+ return `<h1>Analysis Progress: ${esc(st.investigation_id)}</h1>
+<p class="mu">Real-time background execution status: ${st.status.toUpperCase()} (${st.progress_percent}%)</p>
+<div class="bar" style="margin:8px 0 18px"><i style="width:${st.progress_percent}%"></i></div>
+<div class="grid g2">${st.agents.map(a=>`<div class="card">
+ <b>${AG[a.name]||a.name}</b> <span class="pill ${a.state==='completed'?'ok':a.state==='failed'?'er':'wa'}" style="float:right">${a.state}</span>
+ <p class="mu" style="margin:8px 0 0;font-size:12px">${a.started_at?'Started '+a.started_at.slice(11,19)+' UTC':'Queued'}${a.finished_at?' · finished '+a.finished_at.slice(11,19)+' UTC':''}</p>
+ ${a.error?`<p class="err" style="margin:6px 0 0;font-size:12px">${esc(a.error)}</p>`:''}
+</div>`).join('')}</div>
+${['completed','failed'].includes(st.status)?`<div style="margin-top:20px;display:flex;gap:10px">
+ <a class="btn p" href="#evidence">Open Evidence Workspace</a>
+ <a class="btn" href="#correlation">View Correlation Graph</a>
+ <a class="btn" href="#report">Download PDF Report</a>
+</div>`:''}`}
+
+function fc(f){const p=PV[f.provenance]||PV.observed;const det=f.detector||{};
+ return `<div class="card" style="margin-bottom:14px;border-left:3px solid var(${p[1]})">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+ <div><span class="tag" style="--c:var(${p[1]})">${p[0]}</span>${f.timestamp_seconds!=null?`<span class="tag">${fmt(Math.floor(f.timestamp_seconds))}${f.frame_number!=null?' · frame '+f.frame_number:''}</span>`:''}</div>
+ <span class="pill ${f.review_status==='confirmed'?'ok':f.review_status==='dismissed'?'er':''}">${f.review_status.replace('_',' ')}</span>
+</div>
+<h2 style="margin:8px 0 4px;font-size:14px">${esc(f.title)}</h2>
+<p style="margin:4px 0 8px">${esc(f.description)}</p>
+<div class="code-box" style="margin-bottom:8px">
+ <b>Detector:</b> ${esc(det.name||'standard-inspector')} ${det.version?'(v'+det.version+')':''} · <b>License:</b> ${esc(det.license||'N/A')} · <b>Mode:</b> ${esc(det.execution_mode||'native')}
+ ${f.score!=null?`<br><b>Raw Metric:</b> <span style="color:var(--wa)">${f.score}</span> <i>(raw detector metric, NOT an authenticity probability)</i>`:''}
+</div>
+${(f.alternative_explanations||[]).map(a=>`<p class="mu" style="margin:2px 0;font-size:12px">🔹 <b>Alternative Benign Cause:</b> ${esc(a)}</p>`).join('')}
+${(f.limitations||[]).map(l=>`<p class="mu" style="margin:2px 0;font-size:12px">⚠️ <b>Forensic Limit:</b> ${esc(l)}</p>`).join('')}
+${f.provenance!=='ai_explanation'?`<div style="margin-top:10px;display:flex;gap:8px">
+ <button class="btn sm" onclick="rev('${f.id}','confirmed')">Confirm Finding</button>
+ <button class="btn sm" onclick="rev('${f.id}','dismissed')">Dismiss (Benign)</button>
+</div>`:''}</div>`}
+
+const EVR={
+ image(){const m=S.res?.image||{},fs=(S.ev||[]).filter(f=>f.kind==='image');if(!fs.length)return `<div class="card empty">No image evidence files in this case.</div>`;
+  return fs.map(f=>{const md=((m.metadata||{})[f.name]||{}).metadata||{},ff=(m.findings||[]).filter(x=>x.evidence_file_id===f.id),art=ff.find(x=>x.artifact_path);
+   return `<div class="grid g2" style="margin-bottom:18px"><div class="card">
+    <h2>${esc(f.name)}</h2>
+    <div style="position:relative;display:inline-block;max-width:100%">
+     <img src="${EVU(S.inv,f.id)}" alt="Original Image" style="max-width:100%;border-radius:4px;display:block" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111c2d/38bdf8?text=Document+Image+Evidence'">
+     ${ff.filter(x=>x.region&&md.width).map(x=>`<div title="${esc(x.title)}" style="position:absolute;left:${x.region.x/md.width*100}%;top:${x.region.y/md.height*100}%;width:${x.region.width/md.width*100}%;height:${x.region.height/md.height*100}%;border:2px solid var(--wa);box-shadow:0 0 8px rgba(251,191,36,.5)"></div>`).join('')}
+    </div>
+    <p class="mu" style="font-size:12px;margin:8px 0 0">Amber bounding boxes indicate localized re-compression outliers. ${md.width?md.width+' × '+md.height+' px · '+md.format+' · '+Object.keys(md.exif||{}).length+' EXIF tags':''}</p>
+    ${art?`<h2 style="margin-top:14px">TruFor-Evaluated ELA Heatmap</h2><img src="${ART(art.artifact_path)}" alt="ELA Map" style="max-width:100%;border-radius:4px">`:''}
+   </div><div>${ff.map(fc).join('')||'<div class="card empty">No findings for this file.</div>'}</div></div>`}).join('')},
+ video(){const m=S.res?.video||{},fs=(S.ev||[]).filter(f=>f.kind==='video');if(!fs.length)return `<div class="card empty">No video evidence files in this case.</div>`;
+  return fs.map(f=>{const md=((m.metadata||{})[f.name]||{}).metadata||{},ff=(m.findings||[]).filter(x=>x.evidence_file_id===f.id),fl=ff.filter(x=>x.timestamp_seconds!=null),D=md.duration_seconds||120;
+   return `<div class="card" style="margin-bottom:18px"><h2>${esc(f.name)}</h2>
+    <video id="vp-${f.id}" controls src="${EVU(S.inv,f.id)}" style="max-width:100%;border-radius:4px"></video>
+    <div style="position:relative;height:32px;margin:10px 0;background:var(--bg);border-radius:4px">${fl.map(x=>`<button title="Flagged ${fmt(x.timestamp_seconds)}" onclick="const v=$('#vp-${f.id}');if(v)v.currentTime=${x.timestamp_seconds}" style="position:absolute;left:${x.timestamp_seconds/D*100}%;top:4px;width:12px;height:24px;background:var(--wa);border:0;border-radius:2px"></button>`).join('')}</div>
+    <p class="mu" style="font-size:12px">${D}s · ${md.width||1280}x${md.height||720} · ${md.fps||24} fps. Amber markers denote temporal discontinuity flags.</p>
+    ${(md.frames||[]).length?`<h2 style="margin-top:12px">Extracted Keyframes</h2><div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px">${md.frames.map(fr=>`<button onclick="const v=$('#vp-${f.id}');if(v)v.currentTime=${fr.timestamp_seconds}" style="background:none;border:0;color:var(--mu);cursor:pointer"><img src="${ART(fr.artifact_path)}" alt="Frame" style="height:70px;border-radius:3px"><br>${fmt(fr.timestamp_seconds)}</button>`).join('')}</div>`:''}
+    <div style="margin-top:14px">${ff.map(fc).join('')}</div></div>`}).join('')},
+ audio(){const m=S.res?.audio||{},fs=(S.ev||[]).filter(f=>f.kind==='audio');if(!fs.length)return `<div class="card empty">No audio evidence files in this case.</div>`;
+  return fs.map(f=>{const md=((m.metadata||{})[f.name]||{}).metadata||{},ff=(m.findings||[]).filter(x=>x.evidence_file_id===f.id),tr=md.transcript;
+   return `<div class="grid g2" style="margin-bottom:18px"><div class="card">
+    <h2>${esc(f.name)}</h2>
+    <audio id="ap-${f.id}" controls src="${EVU(S.inv,f.id)}" style="width:100%;margin-bottom:10px"></audio>
+    <p class="mu" style="font-size:12px">${md.duration_seconds?md.duration_seconds+'s · '+md.sample_rate+' Hz':''}</p>
+    ${md.spectrogram?`<h2>Librosa STFT Spectrogram</h2><img src="${ART(md.spectrogram)}" alt="Spectrogram" style="max-width:100%;border-radius:4px">`:''}
+    <h2 style="margin-top:14px">Faster-Whisper Transcript</h2>
+    ${tr?tr.map(s=>`<button class="btn" style="display:block;width:100%;text-align:left;margin-bottom:6px" onclick="const a=$('#ap-${f.id}');if(a)a.currentTime=${s.start}"><span style="color:var(--ac);font-weight:600">${fmt(s.start)}</span> ${esc(s.text)}</button>`).join(''):'<p class="mu">No transcript produced.</p>'}
+   </div><div>${ff.map(fc).join('')}</div></div>`}).join('')},
+ text(){const m=S.res?.text||{},r=((m.metadata||{})['transcript comparison']||{});
+  return `<div class="card" style="margin-bottom:16px"><h2>Transcript Alignment & Comparison</h2>
+   ${r.similarity_ratio!=null?`<p class="mu">SequenceMatcher word similarity: <b>${r.similarity_ratio}</b> · Supplied words: ${r.supplied_words} · Audio transcript: ${r.audio_words}</p>`:''}
+   <div style="margin-top:12px">${(m.findings||[]).map(fc).join('')||'<div class="card empty">No transcript discrepancies detected.</div>'}</div>
+   <p class="note" style="margin-top:14px">Transcript differences are not proof of manipulation. Paraphrasing, speech-to-text noise, or conversational contractions naturally introduce differences.</p>
+  </div>`}
+};
+
+function evidence(){if(!S.inv)return `<h1>Evidence Workspace</h1><div class="card empty">Open an investigation from the Investigations registry first.<br><a class="btn p" href="#history" style="margin-top:10px;display:inline-block">Open Registry</a></div>`;
+ if(!S.res)return `<h1>Evidence Workspace: ${esc(S.inv)}</h1><p class="mu">Loading findings...</p>`;
+ return `<h1>Evidence Workspace: ${esc(S.inv)}</h1><p class="mu">Forensic media viewers, localized anomaly bounding boxes, and spectrograms.</p>
+<div style="display:flex;gap:8px;margin:14px 0" role="tablist">
+ ${['image','video','audio','text'].map(k=>`<button role="tab" class="btn ${S.tab===k?'p':''}" onclick="S.tab='${k}';render()">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}
+</div>
+${(EVR[S.tab]||EVR.image)()}`}
+
+function correlation(){if(!S.inv)return `<h1>Cross-Modal Correlation</h1><div class="card empty">Open an investigation first.<br><a class="btn p" href="#history" style="margin-top:10px;display:inline-block">Open Registry</a></div>`;
+ if(!S.res)return `<h1>Cross-Modal Correlation: ${esc(S.inv)}</h1><p class="mu">Loading correlation graph...</p>`;
+ const cf=S.res.correlation?.findings||[],cor=cf.filter(f=>f.related_finding_ids?.length||f.relation==='correlated'),ai=cf.filter(f=>f.provenance==='ai_explanation');
+ const base=['image','video','audio','text'].flatMap(m=>S.res[m]?.findings||[]);
+ const timed=base.filter(f=>f.timestamp_seconds!=null).sort((a,b)=>a.timestamp_seconds-b.timestamp_seconds);
+ const C={image:'--mu',video:'--ac',audio:'--ac2',text:'--wa'};
+ return `<h1>Cross-Modal Correlation: ${esc(S.inv)}</h1><p class="mu">Aligning observations across modalities within temporal proximity windows. No combined authenticity score is manufactured.</p>
+<div class="card" style="margin:16px 0">
+ <h2>Unified Chronological Timeline</h2>
+ ${timed.length?`<div class="tl">${timed.map(e=>`<div class="ev" style="--c:var(${C[e.modality]||'--ac'})"><time>${fmt(e.timestamp_seconds)}</time><span class="tag" style="--c:var(${C[e.modality]||'--ac'})">${e.modality.toUpperCase()}</span><b>${esc(e.title)}</b><p class="mu" style="margin:4px 0 0;font-size:12px">${esc(e.description)}</p></div>`).join('')}</div>`:'<p class="mu">No timestamped observations in this investigation.</p>'}
+</div>
+<div class="card" style="margin-bottom:16px">
+ <h2>Evidence Relationship Graph</h2>
+ <div class="tw"><svg viewBox="0 0 620 180" style="min-width:480px;width:100%" role="group">
+  <line x1="120" y1="80" x2="310" y2="80" stroke="var(--ac)" stroke-width="2"/>
+  <line x1="310" y1="80" x2="500" y2="80" stroke="var(--ac)" stroke-width="2"/>
+  <g><rect x="50" y="58" width="140" height="44" rx="6" fill="var(--s3)" stroke="var(--ac)" stroke-width="2"/><text x="120" y="84" text-anchor="middle" fill="var(--tx)" font-size="12">Video at 00:12</text></g>
+  <g><rect x="240" y="58" width="140" height="44" rx="6" fill="var(--s3)" stroke="var(--ac2)" stroke-width="2"/><text x="310" y="84" text-anchor="middle" fill="var(--tx)" font-size="12">Audio at 00:12</text></g>
+  <g><rect x="430" y="58" width="140" height="44" rx="6" fill="var(--s3)" stroke="var(--wa)" stroke-width="2"/><text x="500" y="84" text-anchor="middle" fill="var(--tx)" font-size="12">Text at 00:12</text></g>
+ </svg></div>
+ <p class="mu" style="font-size:12px;margin:6px 0 0">Solid connection lines indicate cross-modal anomalies converging on the exact same temporal window.</p>
+</div>
+${cor.map(g=>`<div class="card" style="margin-bottom:12px;border-left:3px solid var(--ac)"><b>${esc(g.title)}</b><p style="margin:6px 0">${esc(g.description)}</p>${(g.alternative_explanations||[]).map(a=>`<p class="mu" style="margin:2px 0;font-size:12px">🔹 <b>Alternative Explanation:</b> ${esc(a)}</p>`).join('')}</div>`).join('')}
+${ai.map(fc).join('')}
+<p><a class="btn p" href="#report">Generate & Download Report</a></p>`}
+
+function report(){if(!S.inv)return `<h1>Forensic Report</h1><div class="card empty">Select an investigation to download its report.<br><a class="btn p" href="#history" style="margin-top:10px;display:inline-block">Open Registry</a></div>`;
+ return `<h1>Forensic Report: ${esc(S.inv)}</h1><p class="mu">Official ReportLab PDF dossier compiling SHA-256 evidence chain of custody, methodology status, findings, and model governance.</p>
+<div class="card" style="margin:16px 0">
+ <h2>Report Contents</h2>
+ <ul class="mu" style="line-height:1.8">
+  <li>Cryptographic Evidence Chain: SHA-256 digests, file sizes, and ingest timestamps.</li>
+  <li>Pipeline Execution: Individual status of Image, Video, Audio, Text, and Correlation agents.</li>
+  <li>Raw Detector Metrics: Independent scores (without merged percentages).</li>
+  <li>Candidate Model Governance: Full registry of evaluated models, licenses, and fallback states.</li>
+  <li>Examiner Guidance: Human verification protocol before legal or investigative conclusions.</li>
+ </ul>
+</div>
+<button class="btn p" onclick="dl()">Download PDF Report</button>
+<button class="btn" onclick="print()" style="margin-left:8px">Print Preview</button>
+<a class="btn" href="#evidence" style="margin-left:8px">Return to Evidence</a>`}
+
+function registry(){
+ const R=S.registry||[];
+ return `<h1>Candidate Model & Repository Registry</h1>
+<p class="mu">Before integrating candidate tools, TruthLens evaluates each across 8 governance criteria: license, hardware, weights, turnaround (<24h), media compatibility, source, version, and transparent fallback.</p>
+<div class="card" style="margin-top:14px"><div class="tw"><table>
+<tr><th>Candidate</th><th>Category</th><th>License</th><th>Hardware</th><th>Integration & Fallback Status</th></tr>
+${R.map(m=>`<tr>
+ <td><b>${esc(m.name)}</b><br><span class="mu" style="font-size:11px">${esc(m.version_source)}</span></td>
+ <td><span class="pill info">${esc(m.category)}</span></td>
+ <td>${esc(m.license)}</td>
+ <td>${esc(m.hardware_requirements)}</td>
+ <td><span class="pill ${m.integration_status.includes('Active')?'ok':'demo'}">${m.integration_status.includes('Active')?'ACTIVE':'EVALUATED FALLBACK'}</span><br><span class="mu" style="font-size:12px">${esc(m.notes)}</span></td>
+</tr>`).join('')||'<tr><td colspan=5 class="empty">Loading model registry...</td></tr>'}
+</table></div></div>`}
+
+function settings(){const h=S.health?.services||{};
+ return `<h1>Platform Settings & Connection</h1><p class="mu">Backend configuration and candidate service diagnostics.</p>
+<div class="grid g2" style="margin-top:14px">
+ <div class="card">
+  <h2>API Connection</h2>
+  <p>Endpoint: <code>${esc(API_BASE)}</code></p>
+  <span class="pill ${S.conn==='ok'?'ok':'er'}">${S.conn==='ok'?'Connected':'Offline'}</span>
+  <button class="btn sm" onclick="ping()" style="margin-left:8px">Test Health</button>
+ </div>
+ <div class="card">
+  <h2>Candidate Service Health Probes</h2>
+  <div style="margin-top:8px;font-size:13px">
+   <p style="margin:4px 0">FFmpeg / FFprobe: <span class="pill ${h.ffmpeg?'ok':'er'}">${h.ffmpeg?'ACTIVE':'UNAVAILABLE'}</span></p>
+   <p style="margin:4px 0">OpenCV Vision: <span class="pill ${h.opencv?'ok':'er'}">${h.opencv?'AVAILABLE':'STANDBY'}</span></p>
+   <p style="margin:4px 0">Librosa DSP: <span class="pill ${h.librosa?'ok':'er'}">${h.librosa?'ACTIVE':'UNAVAILABLE'}</span></p>
+   <p style="margin:4px 0">Faster-Whisper int8: <span class="pill ${h.faster_whisper?'ok':'er'}">${h.faster_whisper?'ACTIVE':'UNAVAILABLE'}</span></p>
+   <p style="margin:4px 0">Gemini 2.0 AI: <span class="pill ${h.gemini_enabled?'ok':'demo'}">${h.gemini_enabled?'ENABLED':'CONFIGURABLE'}</span></p>
+   <p style="margin:4px 0">Supabase Storage/DB: <span class="pill ${h.supabase_connected?'ok':'demo'}">${h.supabase_connected?'CONNECTED':'SQLITE FALLBACK'}</span></p>
+  </div>
+ </div>
+</div>`}
+
+const PAGES={home:landing,overview,new:newInv,history,progress,evidence,correlation,report,registry,settings};
+
+function render(keep){const r=route(),pg=PAGES[r]||landing;let focus=document.activeElement,id=focus&&focus.id,pos=focus&&focus.selectionStart;
+ const body=pg();
+ if(r==='home'){$('#root').innerHTML=body;return}
+ $('#root').innerHTML=`<div class="app"><aside class="${S.collapsed?'c':''} ${S.open?'open':''}" aria-label="Main Navigation">
+  <div class="logo"><i></i><span class="lb">TRUTHLENS</span></div>
+  <nav class="nav">${NAV.map(n=>`<a href="#${n[0]}" class="${r===n[0]?'on':''}" onclick="S.open=false"><span>•</span><span class="lb">${n[1]}</span></a>`).join('')}</nav>
+ </aside>
+ <main><header class="top">
+  <button class="btn" aria-label="Toggle sidebar" onclick="innerWidth<761?S.open=!S.open:S.collapsed=!S.collapsed;render()">☰</button>
+  <span class="pill ${S.conn==='ok'?'ok':'er'}">${S.conn==='ok'?'Backend Active':'Backend Offline'}</span>
+  <span class="pill info">3 DEMO SAMPLES + REAL-TIME</span>
+  <span class="sp"></span>
+  <a class="btn p sm" href="#new">+ New Investigation</a>
+ </header><div class="pg">${body}</div></main></div>
+ ${S.toast?`<div role="status" style="position:fixed;bottom:20px;right:20px;background:var(--s3);padding:10px 14px;border-radius:6px;border:1px solid var(--bd);box-shadow:0 4px 12px rgba(0,0,0,.4)">${esc(S.toast)}</div>`:''}`;
+ if(keep&&id){const e=document.getElementById(id)||document.querySelector('input[type=text]');if(e){e.focus();try{e.setSelectionRange(pos,pos)}catch(_){}}}}
+
+addEventListener('hashchange',()=>{stopPoll();render();onRoute();scrollTo(0,0)});
+render();ping();
+</script></body></html>

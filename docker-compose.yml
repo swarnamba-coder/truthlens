@@ -1,0 +1,20 @@
+services:
+  truthlens:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: truthlens
+    ports:
+      - "8000:8000"
+    volumes:
+      - truthlens_uploads:/app/uploads
+      - truthlens_reports:/app/reports
+      - truthlens_artifacts:/app/artifacts
+    environment:
+      - GEMINI_ENABLED=false
+    restart: unless-stopped
+
+volumes:
+  truthlens_uploads:
+  truthlens_reports:
+  truthlens_artifacts:
